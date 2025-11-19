@@ -21,6 +21,7 @@ public Action OnPlayerDeath(Event event, const char[] name, bool dontBroadcast)
 	int attacker = GetClientOfUserId(event.GetInt("attacker"));
 	if(IsValidClient(attacker))
 	{
+		GiveClientWeapon(attacker, 1);
 		if(i_HasBeenHeadShotted[victim])
 		{
 			EmitSoundToClient(victim, "quake/standard/headshot.mp3", _, _, 90, _, 1.0, 100);
