@@ -5,11 +5,14 @@
 
 enum struct ItemInfo
 {
+	char WeaponName[256];
 	bool HasNoClip;
 	int Reload_ModeForce;
 	float WeaponScore;
 	char Classname[36];
+	char WeaponHudExtra[16];
 	char Desc[256];
+	int CustomWeaponOnEquip;
 
 	int Index;
 	int Attrib[32];
@@ -20,11 +23,14 @@ enum struct ItemInfo
 	char WeaponModelOverride[128];
 	int Weapon_Bodygroup;
 	int WeaponModelIndexOverride;
+	int WeaponForceClass;
+	int Ammo;
 
 	Function FuncAttack;
 	Function FuncAttack2;
 	Function FuncAttack3;
 	Function FuncReload4;
+	Function FuncWeaponCreated;
 	void Self(ItemInfo info)
 	{
 		info = this;
@@ -35,13 +41,11 @@ enum struct ItemInfo
 	{
 		static char buffer[512];
 		
-		
 		Format(buffer, sizeof(buffer), "%sdesc", prefix);
 		kv.GetString(buffer, this.Desc, 256);
 		
 		Format(buffer, sizeof(buffer), "%sclassname", prefix);
 		kv.GetString(buffer, this.Classname, 36);
-
 		Format(buffer, sizeof(buffer), "%sscore", prefix);
 		this.WeaponScore = kv.GetFloat(buffer, 0.0);
 		
@@ -51,9 +55,15 @@ enum struct ItemInfo
 		Format(buffer, sizeof(buffer), "%sreload_mode", prefix);
 		this.Reload_ModeForce = kv.GetNum(buffer);
 		
+		Format(buffer, sizeof(buffer), "%sviewmodel_force_class", prefix);
+		this.WeaponForceClass			= kv.GetNum(buffer, 0);
+
 		Format(buffer, sizeof(buffer), "%sno_clip", prefix);
 		this.HasNoClip				= view_as<bool>(kv.GetNum(buffer));
 		
+		Format(buffer, sizeof(buffer), "%sammo", prefix);
+		this.Ammo = kv.GetNum(buffer);
+
 		Format(buffer, sizeof(buffer), "%smodel_weapon_override", prefix);
 		kv.GetString(buffer, this.WeaponModelOverride, sizeof(buffer));
 
@@ -91,6 +101,13 @@ enum struct ItemInfo
 		Format(buffer, sizeof(buffer), "%sfunc_attack4", prefix);
 		kv.GetString(buffer, buffer, sizeof(buffer));
 		this.FuncReload4 = GetFunctionByName(null, buffer);
+
+		Format(buffer, sizeof(buffer), "%sfunc_weapon_created", prefix);
+		kv.GetString(buffer, buffer, sizeof(buffer));
+		this.FuncWeaponCreated = GetFunctionByName(null, buffer);
+
+		Format(buffer, sizeof(buffer), "%sweapon_hud_extra", prefix);
+		kv.GetString(buffer, this.WeaponHudExtra, sizeof(buffer));
 		
 		
 		static char buffers[64][16];
@@ -148,11 +165,10 @@ enum struct ItemInfo
 static ArrayList WeaponList;
 void Weapons_ConfigsExecuted()
 {
+	if(WeaponList)
+		delete WeaponList;
 	
-	if(StoreItems)
-		delete StoreItems;
-	
-	StoreItems = new ArrayList(sizeof(Item));
+	WeaponList = new ArrayList(sizeof(ItemInfo));
 	
 	char buffer[PLATFORM_MAX_PATH];
 	BuildPath(Path_SM, buffer, sizeof(buffer), CONFIG_CFG, "weapons");
@@ -164,27 +180,357 @@ void Weapons_ConfigsExecuted()
 	kv.GotoFirstSubKey();
 	do
 	{
-		ConfigSetup(-1, kv);
-	} while(kv.GotoNextKey());
+		ConfigSetup(kv);
+	} 
+		while(kv.GotoNextKey());
+	delete kv;
 }
 
 
-static void ConfigSetup(int section, KeyValues kv)
+static void ConfigSetup(KeyValues kv)
 {
-	char buffer[128], buffers[12][32];
-		
-		
-	StoreItems.PushArray(item);
-	else if(kv.GotoFirstSubKey())
+	int Score = kv.GetNum("score", -1);
+	if(Score == -1)
 	{
-		item.Slot = -1;
-		int sec = StoreItems.PushArray(item);
-		
-		do
-		{
-			ConfigSetup(sec, kv);
-		}
-		while(kv.GotoNextKey());
-		kv.GoBack();
+		return;
 	}
+	ItemInfo info;
+	kv.GetSectionName(info.WeaponName, sizeof(info.WeaponName));
+	info.WeaponName[0] = CharToUpper(info.WeaponName[0]);
+	info.SetupKV(kv, info.WeaponName);
+	WeaponList.PushArray(info);
+	//Register all weapons currently in the config
+}
+
+
+int Weapons_GiveSpecificItem(int client, const char[] name)
+{
+	static ItemInfo info;
+	int length = WeaponList.Length;
+	for(int i; i<length; i++)
+	{
+		WeaponList.GetArray(i, info);
+
+		if(StrEqual(name, info.WeaponName, false))
+		{
+			int entity = Weapons_GiveItem(client, i);
+			Manual_Impulse_101(client, GetClientHealth(client));
+			return entity;
+		}
+	}
+	
+	ThrowError("Unknown item name %s", name);
+	return -1;
+}
+
+
+
+
+int Weapons_GiveItem(int client, int index, bool &use=false, bool &found=false)
+{
+	if(!WeaponList)
+	{
+		return -1;
+	}
+	if(!IsPlayerAlive(client))
+	{
+		return -1; //STOP. BAD!
+	}
+	//incase.
+	TF2_RemoveCondition(client, TFCond_Taunting);
+	int entity = -1;
+	static ItemInfo info;
+
+	int length = WeaponList.Length;
+
+	if(index > 0 && index <= length)
+	{
+		WeaponList.GetArray(index, info);
+		if(info.Classname[0])
+		{
+			int saveslot = TF2_GetClassnameSlot(info.Classname);
+
+			int GiveWeaponIndex = info.Index;
+			int class = info.WeaponForceClass;
+
+			if(GiveWeaponIndex > 0)
+			{
+				entity = SpawnWeapon(client, info.Classname, GiveWeaponIndex, 5, 6, info.Attrib, info.Value, info.Attribs, class);	
+				
+				i_SavedActualWeaponSlot[entity] = saveslot;
+				
+				HidePlayerWeaponModel(client, entity, true);
+
+			}
+			else
+			{
+				PrintToChatAll("Somehow have an invalid GiveWeaponIndex!!!!! [%i] report to admin now!",GiveWeaponIndex);
+				LogMessage("Weapon Spawned thats bad!");
+				LogMessage("Name of client %N and index %i",client,client);
+				LogMessage("info.Classname: %s",info.Classname);
+				LogMessage("info.Attrib: %s",info.Attrib);
+				LogMessage("info.Value: %s",info.Value);
+				LogMessage("info.Attribs: %s",info.Attribs);
+				ThrowError("Somehow have an invalid GiveWeaponIndex!!!!! [%i] info.Classname %s ",GiveWeaponIndex,info.Classname);
+			}
+
+			StoreWeapon[entity] = index;
+			
+			if(entity > MaxClients)
+			{
+				if(info.CustomWeaponOnEquip != 0)
+				{
+					i_CustomWeaponEquipLogic[entity] = info.CustomWeaponOnEquip;
+				}
+			
+				
+				if(info.Ammo > 0)
+				{
+					SetEntProp(entity, Prop_Send, "m_iPrimaryAmmoType", info.Ammo);
+				}
+				i_Hex_WeaponUsesTheseAbilities[entity] = 0;
+	
+				if(info.FuncAttack != INVALID_FUNCTION)
+				{
+					i_Hex_WeaponUsesTheseAbilities[entity] |= ABILITY_M1; //m1 status to weapon
+				}
+				if(info.FuncAttack2 != INVALID_FUNCTION)
+				{
+					i_Hex_WeaponUsesTheseAbilities[entity] |= ABILITY_M2; //m2 status to weapon
+				}
+				if(info.FuncAttack3 != INVALID_FUNCTION)
+				{
+					i_Hex_WeaponUsesTheseAbilities[entity] |= ABILITY_R;  //R status to weapon
+				}
+				Format(c_WeaponUseAbilitiesHud[entity],sizeof(c_WeaponUseAbilitiesHud[]),"%s",info.WeaponHudExtra);	
+				
+				i_WeaponForceClass[entity] 				= class;
+				i_WeaponModelIndexOverride[entity] 		= info.WeaponModelIndexOverride;
+
+				f_WeaponSizeOverride[entity]			= info.WeaponSizeOverride;
+				f_WeaponSizeOverrideViewmodel[entity]	= info.WeaponSizeOverrideViewmodel;
+				
+				i_WeaponBodygroup[entity] 				= info.Weapon_Bodygroup;
+
+				EntityFuncAttack[entity] = info.FuncAttack;
+				EntityFuncAttack2[entity] = info.FuncAttack2;
+				EntityFuncAttack3[entity] = info.FuncAttack3;
+				EntityFuncReload4[entity]  = info.FuncReload4;
+				EntityFuncReloadCreate [entity]  = info.FuncWeaponCreated;
+				
+
+
+
+				if (info.Reload_ModeForce == 1)
+				{
+				//	SetWeaponViewPunch(entity, 100.0); unused.
+					SetEntProp(entity, Prop_Data, "m_bReloadsSingly", 0);
+				}
+				else if (info.Reload_ModeForce == 2)
+				{
+					SetEntProp(entity, Prop_Data, "m_bReloadsSingly", 1);
+				}
+
+				if(use)
+				{
+					Weapons_SwapToItem(client, entity);
+					use = false;
+				}
+			}
+		}
+	}
+	
+	bool EntityIsAWeapon = false;
+	if(entity > MaxClients)
+	{
+		EntityIsAWeapon = true;
+	}
+
+	if(EntityIsAWeapon)
+	{
+		/*
+			Attributes to Arrays Here
+		*/
+
+		if(Attributes_Get(entity, 4015, 0.0) >= 1.0)
+		{
+			SetEntPropFloat(entity, Prop_Send, "m_flNextPrimaryAttack", FAR_FUTURE);
+		}
+		if(Attributes_Get(entity, Attrib_SetSecondaryDelayInf, 0.0) >= 1.0)
+		{
+			SetEntPropFloat(entity, Prop_Send, "m_flNextSecondaryAttack", FAR_FUTURE);
+		}
+
+	}
+
+	return entity;
+}
+
+
+
+void Weapons_SwapToItem(int client, int swap, bool SwitchDo = true)
+{
+	if(swap == -1)
+		return;
+	
+	char classname[36], buffer[36];
+	GetEntityClassname(swap, classname, sizeof(classname));
+
+	int slot = TF2_GetClassnameSlot(classname, swap);
+	
+	int length = GetMaxWeapons(client);
+	for(int i; i < length; i++)
+	{
+		if(GetEntPropEnt(client, Prop_Send, "m_hMyWeapons", i) == swap)
+		{
+			for(int a; a < length && a != i; a++)
+			{
+				int weapon = GetEntPropEnt(client, Prop_Send, "m_hMyWeapons", a);
+				if(weapon > MaxClients)
+				{
+					GetEntityClassname(weapon, buffer, sizeof(buffer));
+					if(TF2_GetClassnameSlot(buffer, weapon) == slot)
+					{
+						SetEntPropEnt(client, Prop_Send, "m_hMyWeapons", swap, a);
+						SetEntPropEnt(client, Prop_Send, "m_hMyWeapons", weapon, i);
+						break;
+					}
+				}
+			}
+		}
+	}
+	if(SwitchDo)
+		SetPlayerActiveWeapon(client, swap);
+	int WeaponValidCheck = 0;
+
+	//make sure to fake swap aswell!
+	while(WeaponValidCheck != swap)
+	{
+		WeaponValidCheck = Weapons_CycleItems(client, slot);
+		if(WeaponValidCheck == -1)
+			break;
+	}
+}
+
+
+// Returns the top most weapon (or -1 for no change)
+int Weapons_CycleItems(int client, int slot, bool ChangeWeapon = true)
+{
+	char buffer[36];
+	
+	int topWeapon = -1;
+	int firstWeapon = -1;
+	int previousIndex = -1;
+	int length = GetMaxWeapons(client);
+	for(int i; i < length; i++)
+	{
+		int weapon = GetEntPropEnt(client, Prop_Send, "m_hMyWeapons", i);
+		if(weapon != -1)
+		{
+			GetEntityClassname(weapon, buffer, sizeof(buffer));
+			if(TF2_GetClassnameSlot(buffer, weapon) == slot)
+			{
+				if(firstWeapon == -1)
+					firstWeapon = weapon;
+
+				if(previousIndex != -1)
+				{
+					// Replace this weapon with the previous slot (1 <- 2)
+					if(ChangeWeapon)
+						SetEntPropEnt(client, Prop_Send, "m_hMyWeapons", weapon, previousIndex);
+					if(topWeapon == -1)
+						topWeapon = weapon;
+				}
+
+				previousIndex = i;
+			}
+		}
+	}
+
+	if(firstWeapon != -1)
+	{
+		// First to Last (7 <- 0)
+		if(ChangeWeapon)
+			SetEntPropEnt(client, Prop_Send, "m_hMyWeapons", firstWeapon, previousIndex);
+	}
+
+	return topWeapon;
+}
+
+
+
+void Weapons_ApplyAttribs(int client)
+{
+	if(!WeaponList)
+		return;
+
+	Attributes_RemoveAll(client);
+	
+	TFClassType ClassForStats = WeaponClass[client];
+	
+	StringMap map = new StringMap();
+
+
+	float HealthDoLogic = RemoveExtraHealth(ClassForStats, 0.1);
+	map.SetValue("125", HealthDoLogic);
+	map.SetValue("26", (200.0));		// Health
+
+	map.SetValue("343", 1.0); //sentry attackspeed fix
+	map.SetValue("526", 1.0);//
+	map.SetValue("4049", 1.0);// Elemental Res
+
+	map.SetValue("442", 1.0);	// Move Speed
+	map.SetValue("49", 1);		// no doublejumps
+
+	map.SetValue("740", 0.0);	// No Healing from mediguns, allow healing from pickups
+	if(f_PreventMovementClient[client] > GetGameTime())
+	{
+		map.SetValue("819", 1.0);
+		map.SetValue("820", 1.0);
+		map.SetValue("821", 1.0);
+		map.SetValue("107", 0.001);
+		map.SetValue("698", 1.0);
+		//try prevent.
+	}
+	else
+	{
+		float MovementSpeed = 400.0;
+		
+		map.SetValue("107", RemoveExtraSpeed(ClassForStats, MovementSpeed));		// Move Speed
+	}
+
+
+	float value;
+	char buffer1[12];
+	StringMapSnapshot snapshot = map.Snapshot();
+	int length = snapshot.Length;
+	int attribs = 0;
+	for(int i; i < length; i++)
+	{
+
+		snapshot.GetKey(i, buffer1, sizeof(buffer1));
+		if(map.GetValue(buffer1, value))
+		{
+			int index = StringToInt(buffer1);
+
+			if(Attributes_Set(client, index, value))
+				attribs++;
+
+		}
+	}
+	
+	delete snapshot;
+	delete map;
+	TF2_AddCondition(client, TFCond_Dazed, 0.001);
+}
+
+
+
+enum struct WeaponInfo
+{
+	int InternalWeaponID;
+}
+void Weapons_ResetRound()
+{
+	Cvar_GGR_WeaponsTillWin.IntValue;
 }

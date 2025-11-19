@@ -1,0 +1,179 @@
+#pragma semicolon 1
+#pragma newdecls required
+
+
+static Handle SDKEquipWearable;
+static Handle SDKGetMaxHealth;
+
+void SDKCall_Setup()
+{
+	GameData gamedata = LoadGameConfigFile("sm-tf2.games");
+	StartPrepSDKCall(SDKCall_Player);
+	PrepSDKCall_SetVirtual(gamedata.GetOffset("RemoveWearable") - 1);
+	PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
+	SDKEquipWearable = EndPrepSDKCall();
+	if(!SDKEquipWearable)
+		LogError("[Gamedata] Could not find RemoveWearable");
+	
+	delete gamedata;
+	
+	gamedata = LoadGameConfigFile("sdkhooks.games");
+	StartPrepSDKCall(SDKCall_Player);
+	PrepSDKCall_SetFromConf(gamedata, SDKConf_Virtual, "GetMaxHealth");
+	PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_ByValue);
+	SDKGetMaxHealth = EndPrepSDKCall();
+	if(!SDKGetMaxHealth)
+		LogError("[Gamedata] Could not find GetMaxHealth");
+		
+	delete gamedata;
+
+
+	gamedata = LoadGameConfigFile("zombie_riot");
+	StartPrepSDKCall(SDKCall_Entity);
+	PrepSDKCall_SetFromConf(gamedata, SDKConf_Signature, "CBaseEntity::SetLocalOrigin");
+	PrepSDKCall_AddParameter(SDKType_Vector, SDKPass_ByRef);
+	g_hSetLocalOrigin = EndPrepSDKCall();
+	if(!g_hSetLocalOrigin)
+		LogError("[Gamedata] Could not find CBaseEntity::SetLocalOrigin");
+
+	StartPrepSDKCall(SDKCall_Entity);
+	PrepSDKCall_SetFromConf(gamedata, SDKConf_Signature, "CBaseEntity::SetLocalAngles");
+	PrepSDKCall_AddParameter(SDKType_Vector, SDKPass_ByRef);
+	g_hSetLocalAngles = EndPrepSDKCall();
+	if(!g_hSetLocalAngles)
+		LogError("[Gamedata] Could not find CBaseEntity::SetLocalOrigin");
+
+	//CBasePlayer
+	StartPrepSDKCall(SDKCall_Player);
+	PrepSDKCall_SetFromConf(gamedata, SDKConf_Signature, "CBasePlayer::SnapEyeAngles");
+	PrepSDKCall_AddParameter(SDKType_QAngle, SDKPass_ByRef);
+	if ((g_hSnapEyeAngles = EndPrepSDKCall()) == null) SetFailState("Failed to create SDKCall for CBasePlayer::SnapEyeAngles!");
+
+
+		
+	StartPrepSDKCall(SDKCall_Player);
+	PrepSDKCall_SetFromConf(gamedata, SDKConf_Virtual, "CBasePlayer::CheatImpulseCommands");
+	PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain); //Player
+	g_hImpulse = EndPrepSDKCall();
+	if(!g_hImpulse)
+		LogError("[Gamedata] Could not find CBasePlayer::CheatImpulseCommands");
+		
+	StartPrepSDKCall(SDKCall_Entity);
+	PrepSDKCall_SetFromConf(gamedata, SDKConf_Signature, "CBaseEntity::SetAbsVelocity");
+	PrepSDKCall_AddParameter(SDKType_QAngle, SDKPass_ByRef);
+	if ((g_hSetAbsVelocity = EndPrepSDKCall()) == null) SetFailState("Failed to create SDKCall for CBaseEntity::SetAbsVelocity");
+
+	StartPrepSDKCall(SDKCall_Entity);
+	PrepSDKCall_SetFromConf(gamedata, SDKConf_Signature, "CBaseEntity::SetAbsOrigin");
+	PrepSDKCall_AddParameter(SDKType_Vector, SDKPass_ByRef);
+	g_hSetAbsOrigin = EndPrepSDKCall();
+	if(!g_hSetAbsOrigin)
+		LogError("[Gamedata] Could not find CBaseEntity::SetAbsOrigin");
+
+		
+	StartPrepSDKCall(SDKCall_Static);
+	PrepSDKCall_SetFromConf(gamedata, SDKConf_Signature, "Studio_FindAttachment");
+	PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);	//pStudioHdr
+	PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);		//pAttachmentName
+	PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);	//return index
+	if((g_hStudio_FindAttachment = EndPrepSDKCall()) == INVALID_HANDLE) SetFailState("Failed to create Call for Studio_FindAttachment");
+
+	
+	StartPrepSDKCall(SDKCall_Raw);
+	PrepSDKCall_SetFromConf(gamedata, SDKConf_Signature, "CTFPlayerShared::RecalculatePlayerBodygroups");
+	if((g_hRecalculatePlayerBodygroups = EndPrepSDKCall()) == INVALID_HANDLE) SetFailState("Failed to create Call for CTFPlayerShared::RecalculatePlayerBodygroups");
+
+	StartPrepSDKCall(SDKCall_Entity);
+	PrepSDKCall_SetFromConf(gamedata, SDKConf_Signature, "CTFPlayer::TeamFortress_SetSpeed()");
+	SDKSetSpeed = EndPrepSDKCall();
+	if(!SDKSetSpeed)
+		LogError("[Gamedata] Could not find CTFPlayer::TeamFortress_SetSpeed()");
+}
+
+
+
+void SDKCall_EquipWearable(int client, int entity)
+{
+	if(SDKEquipWearable)
+		SDKCall(SDKEquipWearable, client, entity);
+}
+
+void SnapEyeAngles(int client, const float viewAngles[3])
+{
+	SDKCall(g_hSnapEyeAngles, client, viewAngles);
+}
+
+void GetAttachment(int index, const char[] szName, float absOrigin[3], float absAngles[3])
+{
+	GetEntityAttachment(index, FindAttachment(index, szName), absOrigin, absAngles);
+}	
+
+
+int FindAttachment(int index, const char[] pAttachmentName)
+{
+	Address pStudioHdr = GetStudioHdr(index);
+	if(pStudioHdr == Address_Null)
+		return -1;
+			
+	return SDKCall(g_hStudio_FindAttachment, pStudioHdr, pAttachmentName) + 1;
+}	
+
+public Address GetStudioHdr(int index)
+{
+	if(IsValidEntity(index))
+	{
+		return view_as<Address>(GetEntData(index, FindDataMapInfo(index, "m_flFadeScale") + 28));
+	}
+		
+	return Address_Null;
+}	
+void SDKCall_SetSpeed(int client)
+{
+	if(SDKSetSpeed)
+	{
+		SDKCall(SDKSetSpeed, client);
+	}
+	else
+	{
+		TF2_AddCondition(client, TFCond_SpeedBuffAlly, 0.001);
+	}
+}
+
+
+
+void SDKCall_GiveCorrectAmmoCount(int client)
+{
+	//how quirky.
+	SetAmmo(client, 1, 9999);
+	SetAmmo(client, 2, 9999);
+	SetAmmo(client, 3, 9999);
+}
+
+
+stock void Manual_Impulse_101(int client, int health)
+{
+
+	SetConVarInt(sv_cheats, 1, false, false);
+	SDKCall(g_hImpulse, client, 101);
+	SetConVarInt(sv_cheats, 0, false, false);
+	SDKCall_GiveCorrectAmmoCount(client);
+
+	OnWeaponSwitchPost(client, GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon"));
+
+	if(health > 0)
+		SetEntityHealth(client, health);
+}
+
+stock void SDKCall_RecalculatePlayerBodygroups(int index)
+{
+	if(g_hRecalculatePlayerBodygroups)
+	{
+		SDKCall(g_hRecalculatePlayerBodygroups, GetPlayerSharedAddress(index));
+	}
+}
+
+//https://github.com/nosoop/SM-TFUtils/blob/4802fa401a86d3088feb77c8a78d758c10806112/scripting/tf2utils.sp#L1067C1-L1067C1
+static Address GetPlayerSharedAddress(int client) {
+	return GetEntityAddress(client)
+			+ view_as<Address>(FindSendPropInfo("CTFPlayer", "m_Shared"));
+}
