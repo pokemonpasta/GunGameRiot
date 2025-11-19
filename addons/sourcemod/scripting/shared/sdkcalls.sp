@@ -177,3 +177,19 @@ static Address GetPlayerSharedAddress(int client) {
 	return GetEntityAddress(client)
 			+ view_as<Address>(FindSendPropInfo("CTFPlayer", "m_Shared"));
 }
+
+
+
+int SDKCall_GetMaxHealth(int client)
+{
+	return SDKGetMaxHealth ? SDKCall(SDKGetMaxHealth, client) : GetEntProp(client, Prop_Data, "m_iMaxHealth");
+}
+
+int ReturnEntityMaxHealth(int entity)
+{
+	if(entity <= MaxClients)
+	{
+		return SDKCall_GetMaxHealth(entity);
+	}
+	return GetEntProp(entity, Prop_Data, "m_iMaxHealth");
+}

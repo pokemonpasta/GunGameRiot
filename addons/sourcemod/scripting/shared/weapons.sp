@@ -534,10 +534,12 @@ enum struct WeaponInfo
 static ArrayList WeaponListRound;
 void Weapons_ResetRound()
 {
+	Zero(ClientAtWhatScore);
+	
 	if(WeaponListRound)
 		delete WeaponListRound;
 	
-	WeaponListRound = new ArrayList(sizeof(WeaponListRound));
+	WeaponListRound = new ArrayList(sizeof(WeaponInfo));
 	
 
 	int length = WeaponList.Length;
@@ -558,7 +560,7 @@ void Weapons_ResetRound()
 	
 	int MaxWeapons = Cvar_GGR_WeaponsTillWin.IntValue;
 	if(MaxWeapons > length)
-		MaxWeapons = length -1;
+		Cvar_GGR_WeaponsTillWin.IntValue = length -1;
 	WeaponInfo Weplist;
 	ItemInfo info;
 	for(int i; i<MaxWeapons; i++)
@@ -570,8 +572,6 @@ void Weapons_ResetRound()
 		WeaponListRound.PushArray(Weplist);
 	}
 	WeaponListRound.SortCustom(SortScoresWeapons);
-
-
 }
 public int SortScoresWeapons(int iIndex1, int iIndex2, Handle hMap, Handle hHandle)
 {
@@ -579,4 +579,22 @@ public int SortScoresWeapons(int iIndex1, int iIndex2, Handle hMap, Handle hHand
     float Score2 = GetArrayCell(hMap, iIndex2, WeaponInfo::ScoreSave);
     
     return (Score1 < Score2);
+}
+
+
+void GiveClientWeapon(int client, int Upgrade = 0)
+{
+	int GiveWeapon = ClientAtWhatScore[client];
+	GiveWeapon += Upgrade;
+	GiveWeapon++;
+	if(GiveWeapon >= Cvar_GGR_WeaponsTillWin.IntValue)
+	{
+		//epic win
+	}
+
+	WeaponInfo Weplist;
+	WeaponList.GetArray(GiveWeapon, Weplist);
+	
+	Weapons_GiveItem(client, Weplist.InternalWeaponID);
+	Manual_Impulse_101(client, ReturnEntityMaxHealth(client));
 }

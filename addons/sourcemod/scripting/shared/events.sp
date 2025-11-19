@@ -83,9 +83,8 @@ public void OnPlayerResupply(Event event, const char[] name, bool dontBroadcast)
 	ViewChange_PlayerModel(client);
 	ViewChange_Update(client);
 	Weapons_ApplyAttribs(client);
-	Manual_Impulse_101(client, GetClientHealth(client));
 	SDKCall_GiveCorrectAmmoCount(client);
-	
+	GiveClientWeapon(client);
 }
 
 
