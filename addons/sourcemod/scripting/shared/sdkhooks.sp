@@ -143,8 +143,31 @@ public Action Player_TraceAttack(int victim, int& attacker, int& inflictor, floa
 	return Plugin_Changed;
 }
 
+/*
+	//to use EntityFuncTakeDamage, copypaste this on take damage, the wepaon will be your wepaon ez gg
+
+*/
 public Action Player_OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
+	if(weapon != -1)
+	{
+		Function func = EntityFuncTakeDamage[weapon];
+		if(func && func!=INVALID_FUNCTION)
+		{
+			Call_StartFunction(null, func);
+			Call_PushCell(victim);
+			Call_PushCellRef(attacker);
+			Call_PushCellRef(inflictor);
+			Call_PushFloatRef(damage);
+			Call_PushCellRef(damagetype);
+			Call_PushCellRef(weapon);
+			Call_PushArray(damageForce, sizeof(damageForce));
+			Call_PushArray(damagePosition, sizeof(damagePosition));
+			Call_PushCell(damagecustom);
+			Call_Finish();
+		}
+	}
+
 	i_WeaponKilledWith[victim] = weapon;
 	if (damagecustom == TF_CUSTOM_KART)
 	{

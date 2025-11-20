@@ -35,6 +35,7 @@ enum struct ItemInfo
 	Function FuncWeaponCreated;
 	Function FuncWeaponRemoved;
 	Function FuncJarate;
+	Function FuncTakeDamage;
 
 	void Self(ItemInfo info)
 	{
@@ -123,6 +124,10 @@ enum struct ItemInfo
 		Format(buffer, sizeof(buffer), "%sfunc_jarate", prefix);
 		kv.GetString(buffer, buffer, sizeof(buffer));
 		this.FuncJarate = GetFunctionByName(null, buffer);
+
+		Format(buffer, sizeof(buffer), "%sfunc_takedamage", prefix);
+		kv.GetString(buffer, buffer, sizeof(buffer));
+		this.FuncTakeDamage = GetFunctionByName(null, buffer);
 		
 		static char buffers[64][16];
 		Format(buffer, sizeof(buffer), "%sattributes", prefix);
@@ -334,6 +339,7 @@ int Weapons_GiveItem(int client, int index, bool &use=false, bool &found=false)
 				EntityFuncReloadCreate [entity]  = info.FuncWeaponCreated;
 				EntityFuncRemove[entity] = info.FuncWeaponRemoved;
 				EntityFuncJarate[entity] = info.FuncJarate;
+				EntityFuncTakeDamage[entity] = info.FuncTakeDamage;
 				i_WeaponVMTExtraSetting[entity] 			= info.WeaponVMTExtraSetting;
 
 				if (info.Reload_ModeForce == 1)
