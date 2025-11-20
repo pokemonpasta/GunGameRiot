@@ -857,3 +857,114 @@ stock bool Client_Shake(int client, int command=SHAKE_START, float amplitude=50.
 
 	return true;
 }
+
+
+void RequestFrames(RequestFrameCallback func, int frames, any data=0)
+{
+	frames = RoundToNearest(TickrateModify * float(frames));
+	DataPack pack = new DataPack();
+	pack.WriteCell(frames);
+	pack.WriteFunction(func);
+	pack.WriteCell(data);
+	RequestFrame(RequestFramesCallback, pack);
+}
+
+public void RequestFramesCallback(DataPack pack)
+{
+	pack.Reset();
+
+	int frames = pack.ReadCell();
+	if(frames < 1)
+	{
+		Function func = pack.ReadFunction();
+		any data = pack.ReadCell();
+		delete pack;
+		
+		Call_StartFunction(null, func);
+		Call_PushCell(data);
+		Call_Finish();
+	}
+	else
+	{
+		pack.Position--;
+		pack.WriteCell(frames-1, false);
+		RequestFrame(RequestFramesCallback, pack);
+	}
+}
+
+
+
+stock int ParticleEffectAt(float position[3], const char[] effectName, float duration = 0.1)
+{
+	int particle = CreateEntityByName("info_particle_system");
+	if (particle != -1)
+	{
+		TeleportEntity(particle, position, NULL_VECTOR, NULL_VECTOR);
+		SetEntPropFloat(particle, Prop_Data, "m_flSimulationTime", GetGameTime());
+		DispatchKeyValue(particle, "targetname", "rpg_fortress");
+		if(effectName[0])
+			DispatchKeyValue(particle, "effect_name", effectName);
+		else
+			DispatchKeyValue(particle, "effect_name", "3rd_trail");
+
+		DispatchSpawn(particle);
+		if(effectName[0])
+		{
+			ActivateEntity(particle);
+			AcceptEntityInput(particle, "start");
+		}
+		SetEdictFlags(particle, (GetEdictFlags(particle) & ~FL_EDICT_ALWAYS));	
+		//if it has no effect name, then it should always display, as its for other reasons.
+		if (duration > 0.0)
+			CreateTimer(duration, Timer_RemoveEntity, EntIndexToEntRef(particle), TIMER_FLAG_NO_MAPCHANGE);
+	}
+	return particle;
+}
+
+
+stock void SetParent(int iParent, int iChild, const char[] szAttachment = "", const float vOffsets[3] = {0.0,0.0,0.0}, bool maintain_anyways = false)
+{
+	SetVariantString("!activator");
+	AcceptEntityInput(iChild, "SetParent", iParent, iChild);
+	
+	if (szAttachment[0] != '\0') // Use at least a 0.01 second delay between SetParent and SetParentAttachment inputs.
+	{
+		if (szAttachment[0]) // do i even have anything?
+		{
+			SetVariantString(szAttachment); // "head"
+
+			if (maintain_anyways || !AreVectorsEqual(vOffsets, view_as<float>({0.0,0.0,0.0}))) // NULL_VECTOR
+			{
+				if(!maintain_anyways)
+				{
+					float Vecpos[3];
+
+					Vecpos = vOffsets;
+					SDKCall_SetLocalOrigin(iChild,Vecpos);
+				}
+				AcceptEntityInput(iChild, "SetParentAttachmentMaintainOffset", iParent, iChild);
+			}
+			else
+			{
+				AcceptEntityInput(iChild, "SetParentAttachment", iParent, iChild);
+			}
+		}
+	}
+}
+
+
+public Action Timer_RemoveEntity(Handle timer, any entid)
+{
+	int entity = EntRefToEntIndex(entid);
+	if(IsValidEntity(entity))
+	{
+		RemoveEntity(entity);
+	}
+	return Plugin_Stop;
+}
+
+
+stock bool AreVectorsEqual(const float vVec1[3], const float vVec2[3])
+{
+	return (vVec1[0] == vVec2[0] && vVec1[1] == vVec2[1] && vVec1[2] == vVec2[2]);
+} 

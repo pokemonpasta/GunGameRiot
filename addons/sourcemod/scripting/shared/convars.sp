@@ -23,6 +23,13 @@ void ConVar_PluginStart()
 	tf_scout_air_dash_count = ConVar_Add("tf_scout_air_dash_count", "0", false); 
 
 	Cvar_GGR_WeaponsTillWin = CreateConVar("ggr_weapons_till_win", "15", "How many kills untill a player wins");
+	ConVar_Add("tf_weapon_criticals_distance_falloff", "1.0"); //Remove crits
+	ConVar_Add("tf_weapon_minicrits_distance_falloff", "1.0"); //Remove crits
+	ConVar_Add("tf_weapon_criticals", "0.0");		//Remove crits
+	ConVar_Add("tf_weapon_criticals_melee", "0.0");		//Remove crits
+	ConVar_Add("tf_avoidteammates_pushaway", "0"); 
+	ConVar_Add("tf_dropped_weapon_lifetime", "0.0"); //Remove dropped weapons
+	ConVar_Add("tf_spawn_glows_duration", "0.0"); //No glow duration
 
 }
 

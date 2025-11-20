@@ -78,7 +78,7 @@ public Action Player_TraceAttack(int victim, int& attacker, int& inflictor, floa
 		//incase it has headshot multi
 		damage *= Attributes_Get(weapon, Attrib_HeadshotBonus, 1.0);
 
-		damage *= 2.0;
+		damage *= 1.5;
 		
 		int pitch = GetRandomInt(90, 110);
 		int random_case = GetRandomInt(1, 2);

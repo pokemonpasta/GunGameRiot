@@ -62,6 +62,8 @@
 
 
 #include "weapons/weapon_boom_stick.sp"
+#include "weapons/weapon_fists_of_kahml.sp"
+#include "weapons/weapon_arrow_shot.sp"
 
 public Plugin myinfo =
 {
@@ -107,7 +109,9 @@ public void OnMapStart()
 	PrecacheSound("zombiesurvival/headshot2.wav");
 	PrecacheSound("quake/standard/headshot.mp3");
 
+	Weapon_Arrow_Shoot_Map_Precache();
 	BoomStick_MapPrecache();
+	KahmlFistMapStart();
 }
 
 public void OnConfigsExecuted()

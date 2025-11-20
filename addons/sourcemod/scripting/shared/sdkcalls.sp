@@ -50,7 +50,21 @@ void SDKCall_Setup()
 	if ((g_hSnapEyeAngles = EndPrepSDKCall()) == null) SetFailState("Failed to create SDKCall for CBasePlayer::SnapEyeAngles!");
 
 
-		
+	//( const Vector &vecOrigin, const QAngle &vecAngles, const float fSpeed, const float fGravity, ProjectileType_t projectileType, CBaseEntity *pOwner, CBaseEntity *pScorer )
+	StartPrepSDKCall(SDKCall_Static);
+	PrepSDKCall_SetFromConf(gamedata, SDKConf_Signature, "CTFProjectile_Arrow::Create");
+	PrepSDKCall_AddParameter(SDKType_Vector, SDKPass_ByRef);
+	PrepSDKCall_AddParameter(SDKType_QAngle, SDKPass_ByRef);
+	PrepSDKCall_AddParameter(SDKType_Float, SDKPass_Plain);
+	PrepSDKCall_AddParameter(SDKType_Float, SDKPass_Plain);
+	PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+	PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
+	PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
+	PrepSDKCall_SetReturnInfo(SDKType_CBaseEntity, SDKPass_Pointer);
+	g_hCTFCreateArrow = EndPrepSDKCall();
+	if(!g_hCTFCreateArrow)
+		LogError("[Gamedata] Could not find CTFProjectile_Arrow::Create");
+
 	StartPrepSDKCall(SDKCall_Player);
 	PrepSDKCall_SetFromConf(gamedata, SDKConf_Virtual, "CBasePlayer::CheatImpulseCommands");
 	PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain); //Player
@@ -192,4 +206,22 @@ int ReturnEntityMaxHealth(int entity)
 		return SDKCall_GetMaxHealth(entity);
 	}
 	return GetEntProp(entity, Prop_Data, "m_iMaxHealth");
+}
+
+
+
+void SDKCall_SetLocalOrigin(int index, float localOrigin[3])
+{
+	if(g_hSetLocalOrigin)
+	{
+		SDKCall(g_hSetLocalOrigin, index, localOrigin);
+	}
+}
+
+stock int SDKCall_CTFCreateArrow(float VecOrigin[3], float VecAngles[3], const float fSpeed, const float fGravity, int projectileType, int Owner, int Scorer)
+{
+	if(g_hCTFCreateArrow)
+		return SDKCall(g_hCTFCreateArrow, VecOrigin, VecAngles, fSpeed, fGravity, projectileType, Owner, Scorer);
+	
+	return -1;
 }

@@ -68,23 +68,23 @@ bool Attribute_ServerSide(int attribute)
 {
 	if(attribute > 3999)
 		return true;
-	
+	/*
 	switch(attribute)
 	{
-		/*
-
-		Various attributes that are not needed as actual attributes.
-		*/
+		
+		//Various attributes that are not needed as actual attributes.
+		
 		case 526,733, 309, 777, 701, 805, 180, 830, 785, 405, 527, 319, 286,287 , 95 , 93,8, 734:
 		{
 			return true;
 		}
 
-		case 57, 190, 191, 218, 366, 651,33,731,719,544,410,786,3002,3000,149,208,638,17,71,868,122,225, 224, 412:
+		case 57, 190, 191, 218, 366, 651,33,731,719,544,410,786,3002,3000,149,208,638,17,71,868,122,225, 224:
 		{
 			return true;
 		}
 	}
+	*/
 	return false;
 }
 

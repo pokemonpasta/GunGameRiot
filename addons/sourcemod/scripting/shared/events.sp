@@ -17,7 +17,7 @@ public Action OnPlayerDeath(Event event, const char[] name, bool dontBroadcast)
 		return Plugin_Continue;
 	TF2_SetPlayerClass_ZR(victim, CurrentClass[victim], false, false);
 	//am ded
-	RequestFrame(Respawn, GetClientUserId(victim));
+	CreateTimer(1.0, Timer_Respawn, GetClientUserId(victim));
 	int attacker = GetClientOfUserId(event.GetInt("attacker"));
 	if(IsValidClient(attacker))
 	{
@@ -31,19 +31,22 @@ public Action OnPlayerDeath(Event event, const char[] name, bool dontBroadcast)
 	i_HasBeenHeadShotted[victim] = false;
 	return Plugin_Continue;
 }
-public void Respawn(int uuid)
+public Action Timer_Respawn(Handle timer, any uuid)
 {
 	int client = GetClientOfUserId(uuid);
 	if(!IsValidClient(client))
-		return;
+		return Plugin_Stop;
 
 	if(IsPlayerAlive(client))
-		return;
+		return Plugin_Stop;
 		
 	int team = GetClientTeam(client);
 	if(team <= 1)
-		return;
+		return Plugin_Stop;
 	TF2_RespawnPlayer(client);
+	TF2_AddCondition(client, TFCond_UberchargedCanteen, 1.0);
+	TF2_AddCondition(client, TFCond_MegaHeal, 1.0);
+	return Plugin_Stop;
 }
 public void OnPlayerResupply(Event event, const char[] name, bool dontBroadcast)
 {
