@@ -557,8 +557,12 @@ void Weapons_ResetRound()
 	SortIntegers(WeaponsPicking, length, Sort_Random);
 	
 	int MaxWeapons = Cvar_GGR_WeaponsTillWin.IntValue;
-	if(MaxWeapons >= length)
+	if(MaxWeapons > length)
+	{
 		Cvar_GGR_WeaponsTillWin.IntValue = length;
+		MaxWeapons = length;
+	}
+	
 	WeaponInfo Weplist;
 	ItemInfo info;
 	for(int i; i<MaxWeapons; i++)
@@ -600,7 +604,7 @@ void GiveClientWeapon(int client, int Upgrade = 0)
 	Weapons_GiveItem(client, Weplist.InternalWeaponID);
 	Manual_Impulse_101(client, ReturnEntityMaxHealth(client));
 	SDKCall_GiveCorrectAmmoCount(client);
-	RequestFrame(GiveHealth, GetClientUserId(client));
+	RequestFrames(GiveHealth, 1, GetClientUserId(client));
 }
 
 
@@ -610,7 +614,7 @@ public void GiveHealth(int uuid)
 	if(!IsValidClient(client))
 		return;
 
-	if(IsPlayerAlive(client))
+	if(!IsPlayerAlive(client))
 		return;
 		
 	int team = GetClientTeam(client);
