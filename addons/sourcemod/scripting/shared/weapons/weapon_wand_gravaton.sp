@@ -49,6 +49,8 @@ public void Gravaton_Wand_MapStart()
 	for (int i = 0; i < (sizeof(Spark_Sound));	   i++) { PrecacheSound(Spark_Sound[i]);	   }
 
 	LaserIndex = PrecacheModel("materials/sprites/laserbeam.vmt");
+	PrecacheParticleSystem("ExplosionCore_MidAir");
+	PrecacheSound("weapons/airstrike_small_explosion_01.wav");
 }
 
 public void Gravaton_Wand_Primary_Attack(int client, int weapon, bool crit, int slot)
@@ -65,7 +67,6 @@ public void Gravaton_Wand_Primary_Attack(int client, int weapon, bool crit, int 
 	float damage = 65.0;
 		
 	damage *= Attributes_Get(weapon, 410, 1.0);
-
 	float pos[3];
 	float ang[3];
 	GetClientEyePosition(client, pos);
@@ -115,10 +116,9 @@ public void Gravaton_Wand_Primary_Attack(int client, int weapon, bool crit, int 
 	WritePackFloat(data, vec[0]);
 	WritePackFloat(data, vec[1]);
 	WritePackFloat(data, vec[2]);
-	WritePackCell(data, Radius);
+	WritePackFloat(data, Radius);
 	WritePackCell(data, EntIndexToEntRef(client));
-	WritePackCell(data, EntIndexToEntRef(weapon));
-	WritePackCell(data, damage); 
+	WritePackFloat(data, damage); 
 
 	switch(GetRandomInt(1, 2))
 	{
@@ -157,25 +157,26 @@ public Action Smite_Timer_Gravaton_Wand(Handle Smite_Logic, DataPack data)
 	startPosition[0] = ReadPackFloat(data);
 	startPosition[1] = ReadPackFloat(data);
 	startPosition[2] = ReadPackFloat(data);
-	float Ionrange = ReadPackCell(data);
+	float Ionrange = ReadPackFloat(data);
 	int client = EntRefToEntIndex(ReadPackCell(data));
-	float damage = ReadPackCell(data);
+	float damage = ReadPackFloat(data);
 	
 	
 	if (!IsValidClient(client))
 	{
 		return Plugin_Stop;
 	}
-				
-
-	CreateExplosion(client, startPosition, 500.0, RoundToNearest(damage), RoundToNearest(Ionrange));
+	PrintToChatAll("damage 1 %f",damage);
+	TF2_Explode(client, startPosition, damage, Ionrange, "ExplosionCore_MidAir", "weapons/airstrike_small_explosion_01.wav");
 	
+	/*
 	DataPack pack_boom = new DataPack();
 	pack_boom.WriteFloat(startPosition[0]);
 	pack_boom.WriteFloat(startPosition[1]);
 	pack_boom.WriteFloat(startPosition[2]);
 	pack_boom.WriteCell(1);
 	RequestFrame(MakeExplosionFrameLater, pack_boom);
+	*/
 
 	float sky_Loc[3]; sky_Loc = startPosition;
 	sky_Loc[2]+=200.0;

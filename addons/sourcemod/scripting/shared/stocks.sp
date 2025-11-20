@@ -1214,6 +1214,22 @@ stock void CreateExplosion(int owner, const float origin[3], float damage, int m
 	}
 }
 
+stock void TF2_Explode(int iAttacker = -1, float flPos[3], float flDamage, float flRadius, const char[] strParticle, const char[] strSound)
+{
+	int iBomb = CreateEntityByName("tf_generic_bomb");
+	DispatchKeyValueVector(iBomb, "origin", flPos);
+	DispatchKeyValueFloat(iBomb, "damage", flDamage);
+	DispatchKeyValueFloat(iBomb, "radius", flRadius);
+	DispatchKeyValue(iBomb, "health", "1");
+	DispatchKeyValue(iBomb, "explode_particle", strParticle);
+	DispatchKeyValue(iBomb, "sound", strSound);
+	DispatchSpawn(iBomb);
+
+	if (iAttacker == -1)
+		AcceptEntityInput(iBomb, "Detonate");
+	else
+		SDKHooks_TakeDamage(iBomb, 0, iAttacker, 9999.0);
+}
 
 #define EXPLOSION_PARTICLE_SMALL_1 "ExplosionCore_MidAir"
 #define EXPLOSION_PARTICLE_SMALL_2 "ExplosionCore_buildings"
