@@ -23,6 +23,8 @@ public Action OnPlayerDeath(Event event, const char[] name, bool dontBroadcast)
 	
 	if(IsValidClient(attacker) && attacker != victim)
 	{
+		ClientKillsThisFrame[attacker]++;
+		
 		RequestFrame(DelayFrame_RankPlayerUp, GetClientUserId(attacker));
 		if(i_HasBeenHeadShotted[victim])
 		{
@@ -53,9 +55,18 @@ stock void DelayFrame_RankPlayerUp(int userid)
 	int client = GetClientOfUserId(userid);
 	if(!IsValidEntity(client))
 		return;
-
-	GiveClientWeapon(client, 1);
+	
+	if (!ClientKillsThisFrame[client])
+		return;
+	
+	// Only allow up to 3 levels per frame, in case an explosion kills a million people
+	int levels = ClientKillsThisFrame[client];
+	if (levels > 3)
+		levels = 3;
+	
+	GiveClientWeapon(client, levels);
 	ClientAssistsThisLevel[client] = 0;
+	ClientKillsThisFrame[client] = 0;
 	
 	if(ClientAtWhatScore[client] >= Cvar_GGR_WeaponsTillWin.IntValue && GameRules_GetRoundState() == RoundState_RoundRunning)
 	{
@@ -63,7 +74,7 @@ stock void DelayFrame_RankPlayerUp(int userid)
 		ClientAtWhatScore[client] = Cvar_GGR_WeaponsTillWin.IntValue;
 		
 		// Make this prettier later i dunno
-		PrintToChatAll("%N wins the game!", client);
+		CPrintToChatAll("%s %N wins the game!", GGR_PREFIX, client);
 		
 		ForceTeamWin(TF2_GetClientTeam(client));
 	}
