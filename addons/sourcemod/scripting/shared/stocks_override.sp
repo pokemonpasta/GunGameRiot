@@ -48,6 +48,7 @@ void Stock_SetHudTextParams(float x, float y, float holdTime, int r, int g, int 
 
 #define SetHudTextParams Stock_SetHudTextParams
 
+/*
 int Stock_ShowSyncHudText(int client, Handle sync, const char[] message, any ...)
 {
 	int ReturnFlags = GetEntProp(client, Prop_Send, "m_iHideHUD");
@@ -71,7 +72,7 @@ void Stock_PrintHintText(int client, const char[] format, any ...)
 	PrintHintText(client, buffer);
 }
 #define PrintHintText Stock_PrintHintText
-
+*/
 stock void ResetToZero(any[] array, int length)
 {
     for(int i; i<length; i++)
@@ -229,7 +230,7 @@ stock void Custom_SetAbsVelocity(int client, const float viewAngles[3])
 
 #define TeleportEntity Custom_TeleportEntity
 
-
+/*
 void Edited_TF2_RegeneratePlayer(int client)
 {
 #if defined ZR
@@ -240,7 +241,7 @@ void Edited_TF2_RegeneratePlayer(int client)
 }
 
 #define TF2_RegeneratePlayer Edited_TF2_RegeneratePlayer
-
+*/
 
 stock void Edited_TF2_RespawnPlayer(int client)
 {

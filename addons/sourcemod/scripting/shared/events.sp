@@ -21,26 +21,42 @@ public Action OnPlayerDeath(Event event, const char[] name, bool dontBroadcast)
 	int attacker = GetClientOfUserId(event.GetInt("attacker"));
 	if(IsValidClient(attacker) && attacker != victim)
 	{
-		GiveClientWeapon(attacker, 1);
+		DataPack pack = new DataPack();
+		pack.WriteCell(EntIndexToEntRef(attacker));
+		RequestFrame(DelayFrame_RankPlayerUp, pack);
 		if(i_HasBeenHeadShotted[victim])
 		{
 			EmitSoundToClient(victim, "quake/standard/headshot.mp3", _, _, 90, _, 1.0, 100);
 			EmitSoundToClient(attacker, "quake/standard/headshot.mp3", _, _, 90, _, 1.0, 100);
 		}
-		
-		if(ClientAtWhatScore[attacker] >= Cvar_GGR_WeaponsTillWin.IntValue && GameRules_GetRoundState() == RoundState_RoundRunning)
-		{
-			//epic win
-			ClientAtWhatScore[attacker] = Cvar_GGR_WeaponsTillWin.IntValue;
-			
-			// Make this prettier later i dunno
-			PrintToChatAll("%N wins the game!", attacker);
-			
-			ForceTeamWin(TF2_GetClientTeam(attacker));
-		}
 	}
 	i_HasBeenHeadShotted[victim] = false;
 	return Plugin_Continue;
+}
+
+stock void DelayFrame_RankPlayerUp(DataPack pack)
+{
+	pack.Reset();
+	int attacker = EntRefToEntIndex(pack.ReadCell());
+	if(!IsValidEntity(attacker))
+	{
+		delete pack;
+		return;
+	}
+
+	GiveClientWeapon(attacker, 1);
+	
+	if(ClientAtWhatScore[attacker] >= Cvar_GGR_WeaponsTillWin.IntValue && GameRules_GetRoundState() == RoundState_RoundRunning)
+	{
+		//epic win
+		ClientAtWhatScore[attacker] = Cvar_GGR_WeaponsTillWin.IntValue;
+		
+		// Make this prettier later i dunno
+		PrintToChatAll("%N wins the game!", attacker);
+		
+		ForceTeamWin(TF2_GetClientTeam(attacker));
+	}
+	delete pack;
 }
 public Action Timer_Respawn(Handle timer, any uuid)
 {

@@ -2,7 +2,7 @@
 #pragma newdecls required
 
 float TickrateModify;
-int TickrateModifyInt;
+//int TickrateModifyInt;
 
 ConVar Cvar_GGR_WeaponsTillWin;
 ConVar Cvar_GGR_AllowFreeClassPicking;
@@ -26,7 +26,7 @@ ConVar mp_friendlyfire;
 DynamicHook g_DHookRocketExplode; //from mikusch but edited
 int m_bOnlyIterateItemViewAttributes;
 int m_Item;
-bool IsInsideManageRegularWeapons;
+//bool IsInsideManageRegularWeapons;
 int iref_PropAppliedToRocket[MAXENTITIES];
 float f_RoundStartUberLastsUntil;
 

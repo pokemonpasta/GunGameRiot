@@ -43,7 +43,7 @@ static DynamicHook DHook_CreateVirtual(GameData gamedata, const char[] name)
 public MRESReturn DHook_ManageRegularWeaponsPre(int client, DHookParam param)
 {
 	// Gives our desired class's wearables
-	IsInsideManageRegularWeapons = true;
+//	IsInsideManageRegularWeapons = true;
 	//select their class here again.
 	if(Cvar_GGR_AllowFreeClassPicking.IntValue)
 		CurrentClass[client] = view_as<TFClassType>(GetEntProp(client, Prop_Send, "m_iDesiredPlayerClass"));
@@ -58,7 +58,7 @@ public MRESReturn DHook_ManageRegularWeaponsPre(int client, DHookParam param)
 }
 public MRESReturn DHook_ManageRegularWeaponsPost(int client, DHookParam param)
 {
-	IsInsideManageRegularWeapons = false;
+//	IsInsideManageRegularWeapons = false;
 	return MRES_Ignored;
 }
 bool WasMedicPreRegen[MAXPLAYERS];
