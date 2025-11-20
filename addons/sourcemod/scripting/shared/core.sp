@@ -129,6 +129,10 @@ public void OnMapStart()
 	AddFileToDownloadsTable("models/zombie_riot/weapons/ruina_models_1_2_2.dx90.vtx");
 	AddFileToDownloadsTable("models/zombie_riot/weapons/ruina_models_1_2_2.mdl");
 	AddFileToDownloadsTable("models/zombie_riot/weapons/ruina_models_1_2_2.vvd");
+	AddFileToDownloadsTable("models/zombie_riot/weapons/ruina_models_2_5.dx80.vtx");
+	AddFileToDownloadsTable("models/zombie_riot/weapons/ruina_models_2_5.dx90.vtx");
+	AddFileToDownloadsTable("models/zombie_riot/weapons/ruina_models_2_5.mdl");
+	AddFileToDownloadsTable("models/zombie_riot/weapons/ruina_models_2_5.vvd");
 	AddFileToDownloadsTable("models/zombie_riot/weapons/c_soldier_arms.dx80.vtx");
 	AddFileToDownloadsTable("models/zombie_riot/weapons/c_soldier_arms.dx90.vtx");
 	AddFileToDownloadsTable("models/zombie_riot/weapons/c_soldier_arms.mdl");
