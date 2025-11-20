@@ -2,26 +2,29 @@
 #pragma newdecls required
 
 
+float delay_hud[MAXPLAYERS];
 void SDKHooks_ClearAll()
 {
 
 }
 
-
+Handle SyncHud_GunGame;
 void SDKHook_PluginStart()
 {
-
+	SyncHud_GunGame = CreateHudSynchronizer();
 }
 
 
 void SDKHook_MapStart()
 {
-
+	Zero(delay_hud);
 }
 
 
 stock void SDKHook_HookClient(int client)
 {
+	SDKUnhook(client, SDKHook_PostThink, OnPostThink);
+	SDKHook(client, SDKHook_PostThink, OnPostThink);
 	SDKUnhook(client, SDKHook_WeaponSwitchPost, OnWeaponSwitchPost);
 	SDKHook(client, SDKHook_WeaponSwitchPost, OnWeaponSwitchPost);
 	SDKUnhook(client, SDKHook_TraceAttack, Player_TraceAttack);
@@ -29,6 +32,21 @@ stock void SDKHook_HookClient(int client)
 
 }
 
+public void OnPostThink(int client)
+{
+	float GameTime = GetGameTime();
+
+	if(delay_hud[client] < GameTime)	
+	{
+		delay_hud[client] = GameTime + 0.4;
+		char buffer[255];
+		float HudY = 0.8;
+		float HudX = -1.0;
+		SetHudTextParams(HudX, HudY, 0.81, 255, 165, 0, 255);
+		Format(buffer, sizeof(buffer), "(%i/%i)\n[%s]", ClientAtWhatScore[client], Cvar_GGR_WeaponsTillWin.IntValue, c_WeaponName[client]);
+		ShowSyncHudText(client, SyncHud_GunGame, "%s", buffer);
+	}
+}
 
 
 public void OnWeaponSwitchPost(int client, int weapon)

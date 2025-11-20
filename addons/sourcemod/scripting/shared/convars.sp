@@ -23,7 +23,7 @@ void ConVar_PluginStart()
 	mp_friendlyfire = ConVar_Add("mp_friendlyfire", "0", false, (FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_CHEAT));
 	tf_scout_air_dash_count = ConVar_Add("tf_scout_air_dash_count", "0", false); 
 
-	Cvar_GGR_WeaponsTillWin = CreateConVar("ggr_weapons_till_win", "15", "How many kills untill a player wins");
+	Cvar_GGR_WeaponsTillWin = CreateConVar("ggr_weapons_till_win", "25", "How many kills untill a player wins");
 	Cvar_GGR_AllowFreeClassPicking = CreateConVar("ggr_allowfreeclasspicking", "0", "are players allowed to have classes for vanity");
 	ConVar_Add("tf_weapon_criticals_distance_falloff", "1.0"); //Remove crits
 	ConVar_Add("tf_weapon_minicrits_distance_falloff", "1.0"); //Remove crits

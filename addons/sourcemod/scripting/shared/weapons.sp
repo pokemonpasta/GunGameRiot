@@ -253,6 +253,7 @@ int Weapons_GiveItem(int client, int index, bool &use=false, bool &found=false)
 
 			int GiveWeaponIndex = info.Index;
 			int class = info.WeaponForceClass;
+			Format(c_WeaponName[client],sizeof(c_WeaponName[]),"%s",info.WeaponName);	
 
 			if(GiveWeaponIndex > 0)
 			{
@@ -607,10 +608,11 @@ void GiveClientWeapon(int client, int Upgrade = 0)
 	WeaponListRound.GetArray(GiveWeapon, Weplist);
 	
 	RemoveAllWeapons(client);
-	Weapons_GiveItem(client, Weplist.InternalWeaponID);
+	int weapon = Weapons_GiveItem(client, Weplist.InternalWeaponID);
 	Manual_Impulse_101(client, ReturnEntityMaxHealth(client));
 	SDKCall_GiveCorrectAmmoCount(client);
 	RequestFrames(GiveHealth, 1, GetClientUserId(client));
+	SetPlayerActiveWeapon(client, weapon);
 }
 
 

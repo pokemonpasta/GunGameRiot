@@ -24,6 +24,7 @@ void DHook_Setup()
 	DHook_CreateDetour(gamedata, "CTFPlayer::RegenThink", DHook_RegenThinkPre, DHook_RegenThinkPost);
 	DHook_CreateDetour(gamedata, "CTFPlayer::ManageRegularWeapons()", DHook_ManageRegularWeaponsPre, DHook_ManageRegularWeaponsPost);
 	DHook_CreateDetour(gamedata, "CTFPlayer::SpeakConceptIfAllowed()", SpeakConceptIfAllowed_Pre, SpeakConceptIfAllowed_Post);
+	DHook_CreateDetour(gamedata, "CTFGameRules::CalcPlayerScore", Detour_CalcPlayerScore);
 
 	g_DHookRocketExplode = DHook_CreateVirtual(gamedata, "CTFBaseRocket::Explode");
 	HookItemIterateAttribute = DynamicHook.FromConf(gamedata, "CEconItemView::IterateAttributes");
@@ -95,6 +96,12 @@ public MRESReturn DHook_CanAirDashPre(int client, DHookReturn ret)
 
 
 
+MRESReturn Detour_CalcPlayerScore(DHookReturn hReturn, DHookParam hParams)
+{
+	//make strange point gain not possible
+	hReturn.Value = 0;
+	return MRES_Supercede;
+}
 
 void DHook_EntityDestoryed()
 {

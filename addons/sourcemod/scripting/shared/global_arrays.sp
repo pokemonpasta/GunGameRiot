@@ -32,6 +32,7 @@ float f_RoundStartUberLastsUntil;
 
 ConVar tf_scout_air_dash_count;
 
+
 int h_NpcSolidHookType[MAXENTITIES];
 bool b_IsATrigger[MAXENTITIES];
 bool b_IsATriggerHurt[MAXENTITIES];
@@ -43,6 +44,7 @@ int i_WeaponForceClass[MAXENTITIES];
 float f_WeaponSizeOverride[MAXENTITIES];
 float f_WeaponSizeOverrideViewmodel[MAXENTITIES];
 char c_WeaponUseAbilitiesHud[MAXENTITIES][16];
+char c_WeaponName[MAXPLAYERS][64];
 int i_Hex_WeaponUsesTheseAbilities[MAXENTITIES];
 int i_Viewmodel_PlayerModel[MAXENTITIES] = {-1, ...};
 int i_Worldmodel_WeaponModel[MAXPLAYERS] = {-1, ...};
