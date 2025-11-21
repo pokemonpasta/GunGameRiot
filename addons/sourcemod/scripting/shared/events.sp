@@ -31,7 +31,7 @@ public Action OnPlayerDeath(Event event, const char[] name, bool dontBroadcast)
 	}
 	if(RankUp)
 	{
-		if(IsValidClient(attacker) && attacker != victim)
+		if(IsValidClient(attacker) && attacker != victim && GameRules_GetRoundState() <= RoundState_RoundRunning)
 		{
 			ClientKillsThisFrame[attacker]++;
 			
