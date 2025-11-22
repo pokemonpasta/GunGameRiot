@@ -82,6 +82,6 @@ void Kamikaze_ExplodeMeNow(DataPack pack)
 	
 	static float startPosition[3];
 	WorldSpaceCenter(client, startPosition);
-	TF2_Explode(client, startPosition, 1000.0, 100.0, "hightower_explosion", "common/null.wav");
+	TF2_Explode(client, startPosition, 1000.0, 130.0, "hightower_explosion", "common/null.wav");
 	EmitSoundToAll("mvm/mvm_tank_explode.wav", client, SNDCHAN_STATIC, 90, _, 0.8);
 }
