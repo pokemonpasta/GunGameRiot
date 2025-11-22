@@ -30,45 +30,16 @@ public void BonkBat_MapStart()
 
 public Action BonkBat_OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
-    if(victim != -1 && attacker != -1 && (damagetype & DMG_CLUB))
+    if(victim != -1 && attacker != -1 && (damagetype & DMG_CLUB) && damage > 0.0)
     {
-        if(damage > 0.0)
-        {
-            EmitSoundToAll(BonkBat_Sound, victim, SNDCHAN_ITEM, 70, _, 1.0);
-        }
-        
+        EmitSoundToAll(BonkBat_Sound, victim, SNDCHAN_ITEM, 70, _, 1.0);
         damage = 1.0;
         
         // unground
-        // SetPropEntity(victim, "m_hGroundEntity", null)
         SetEntPropEnt(victim, Prop_Send, "m_hGroundEntity", -1);
-        // victim.RemoveFlag(FL_ONGROUND)
         SetEntProp(victim, Prop_Data, "m_fFlags", (GetEntProp(victim, Prop_Data, "m_fFlags") & ~FL_ONGROUND));
         
-        // local scale = 450.0
-        float scale = 450.0;
-        
-        ScaleVector(damageForce, scale);
-        
-        // // local dir = attacker.EyeAngles().Forward()
-        // float eyeangles[3], dir[3], vel[3], origin[3];
-        // GetClientEyeAngles(attacker, eyeangles);
-        // GetAngleVectors(eyeangles, dir, NULL_VECTOR, NULL_VECTOR);
-        // // local vel = victim.GetAbsVelocity()
-        // GetEntPropVector(victim, Prop_Data, "m_vecVelocity", vel); 
-        // // dir.z = Max(dir.z, 0.0)
-        // dir[2] = BonkBat_Max(dir[2], 0.0);
-        // // vel += dir * scale
-        // ScaleVector(dir, scale);
-        
-        // float final_vel[3];
-        // AddVectors(vel, dir, final_vel);
-        // // vel.z += scale
-        // final_vel[2] += scale;
-        // // victim.SetAbsVelocity(vel)
-        // Custom_SetAbsVelocity(victim, vel);				
-        // // victim.EmitSound(bat_hit_sound)
-        // GetClientAbsOrigin(victim, origin);
+        damageForce[2] *= 450.0;
         
         return Plugin_Changed;
     }
