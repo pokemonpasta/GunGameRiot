@@ -29,7 +29,7 @@ public Action BonkBat_OnTakeDamage(int victim, int &attacker, int &inflictor, fl
         SetEntPropEnt(victim, Prop_Send, "m_hGroundEntity", -1);
         SetEntProp(victim, Prop_Data, "m_fFlags", (GetEntProp(victim, Prop_Data, "m_fFlags") & ~FL_ONGROUND));
         
-        CreateTimer(0.01, BonkBat_PostTakeDamage, victim, _); // this kinda sucks ngl
+        CreateTimer(0.1, BonkBat_PostTakeDamage, victim, _); // this kinda sucks ngl
         
         return Plugin_Changed;
     }
