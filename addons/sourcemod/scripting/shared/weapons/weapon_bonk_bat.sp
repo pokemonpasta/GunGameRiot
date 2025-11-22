@@ -32,16 +32,14 @@ public Action BonkBat_OnTakeDamage(int victim, int &attacker, int &inflictor, fl
         float vel[3];
         GetEntPropVector(victim, Prop_Data, "m_vecAbsVelocity", vel);  
         
-        float scale = 5000.0;
-        
-        ScaleVector(vel, scale);
+        float scale = 450.0;
         
         vel[2] = FloatAbs(vel[2]);
-        vel[2] += scale / 2.0;
+        vel[2] *= scale / 2.0;
         
         Custom_SetAbsVelocity(victim, vel);
     
-        Attributes_Set(victim, Attrib_MultiplyFallDamage, 200.0);
+        Attributes_Set(victim, Attrib_MultiplyFallDamage, 10.0);
               
         return Plugin_Changed;
     }
