@@ -18,15 +18,15 @@ public void BonkBat_MapStart()
    
 }
 
-public void BonkBat_OnCreate(int client, int weapon)
-{
-    for (int i = 0; i < 4; i++)
-    {
-		SetEntProp(weapon, Prop_Send, "m_nModelIndexOverrides", BonkBat_ModelIndex, 4, i);
-    }
-    SetEntProp(weapon, Prop_Send, "m_bBeingRepurposedForTaunt", 1, 1);
-    SetEntProp(weapon, Prop_Send, "m_nRenderMode", 1); // kRenderTransColor
-}
+// public void BonkBat_OnCreate(int client, int weapon)
+// {
+//     for (int i = 0; i < 4; i++)
+//     {
+// 		SetEntProp(weapon, Prop_Send, "m_nModelIndexOverrides", BonkBat_ModelIndex, 4, i);
+//     }
+//     SetEntProp(weapon, Prop_Send, "m_bBeingRepurposedForTaunt", 1, 1);
+//     SetEntProp(weapon, Prop_Send, "m_nRenderMode", 1); // kRenderTransColor
+// }
 
 public Action BonkBat_OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
@@ -58,12 +58,12 @@ public Action BonkBat_OnTakeDamage(int victim, int &attacker, int &inflictor, fl
         // vel.z += scale
         final_vel[2] += scale;
         // victim.SetAbsVelocity(vel)
-        TeleportEntity(victim, NULL_VECTOR, NULL_VECTOR, vel);				
+        Custom_SetAbsVelocity(victim, vel);				
         // victim.EmitSound(bat_hit_sound)
         GetClientAbsOrigin(victim, origin);
-        EmitAmbientSound(BonkBat_Sound, origin, victim, 255, _, 1.0, 100, 0.0);
+        EmitSoundToAll(BonkBat_Sound, victim, SNDCHAN_WEAPON, 70, _, 0.35);
         
-        return Plugin_Handled;
+        return Plugin_Changed;
     }
     
     return Plugin_Continue;
