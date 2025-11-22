@@ -26,18 +26,18 @@ public Action BonkBat_OnTakeDamage(int victim, int &attacker, int &inflictor, fl
         damage = 1.0;
         
         // unground
-        SetEntPropEnt(victim, Prop_Send, "m_hGroundEntity", -1);
-        SetEntProp(victim, Prop_Data, "m_fFlags", (GetEntProp(victim, Prop_Data, "m_fFlags") & ~FL_ONGROUND));
+        // SetEntPropEnt(victim, Prop_Send, "m_hGroundEntity", -1);
+        // SetEntProp(victim, Prop_Data, "m_fFlags", (GetEntProp(victim, Prop_Data, "m_fFlags") & ~FL_ONGROUND));
         
-        float vel[3];
-        GetEntPropVector(victim, Prop_Data, "m_vecAbsVelocity", vel);  
+        // float vel[3];
+        // GetEntPropVector(victim, Prop_Data, "m_vecAbsVelocity", vel);  
         
-        float scale = 3000.0;
+        // float scale = 3000.0;
         
-        vel[2] = FloatAbs(vel[2]);
-        vel[2] *= scale;
+        // vel[2] = FloatAbs(vel[2]);
+        // vel[2] *= scale;
         
-        Custom_SetAbsVelocity(victim, vel);
+        // Custom_SetAbsVelocity(victim, vel);
     
         Attributes_Set(victim, Attrib_MultiplyFallDamage, 10.0);
               
