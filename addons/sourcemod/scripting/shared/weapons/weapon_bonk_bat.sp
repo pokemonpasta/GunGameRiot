@@ -6,15 +6,23 @@ static int BonkBat_ModelIndex;
 
 public void BonkBat_MapStart()
 {
+    AddFileToDownloadsTable("sound/tf2ware_ultimate/bonk_bat_hit.wav");
+    AddFileToDownloadsTable("models/weapons/c_models/tf2ware/c_bonk_bat.mdl");
+    AddFileToDownloadsTable("materials/models/weapons/c_items/tf2ware/c_candy_cane_blu.vmt");
+    AddFileToDownloadsTable("materials/models/weapons/c_items/tf2ware/c_candy_cane_blu.vtf");
+    AddFileToDownloadsTable("materials/models/weapons/c_items/tf2ware/c_candy_cane_red.vmt");
+    AddFileToDownloadsTable("materials/models/weapons/c_items/tf2ware/c_candy_cane_red.vtf");
+    
     PrecacheSound(BonkBat_Sound);
     BonkBat_ModelIndex = PrecacheModel("models/weapons/c_models/tf2ware/c_bonk_bat.mdl");
+   
 }
 
 // todo might need to add an oncreate, and add some extra netprop and vm stuff?? check tf2ware bonk.nut
-// public void BonkBat_OnCreate(int client, int weapon)
-// {
+public void BonkBat_OnCreate(int client, int weapon)
+{
     
-// }
+}
 
 public Action BonkBat_OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
