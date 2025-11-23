@@ -83,6 +83,8 @@
 #include "weapons/weapon_dupstepgun.sp"
 #include "weapons/weapon_cow_mangler.sp"
 #include "weapons/weapon_scp018.sp"
+#include "weapons/weapon_firestaff.sp"
+#include "weapons/weapon_cspy.sp"
 
 public Plugin myinfo =
 {
