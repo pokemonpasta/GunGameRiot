@@ -104,6 +104,7 @@ stock void DelayFrame_RankPlayerUp(int userid)
 		ClientAtWhatScore[client] = Cvar_TGG_WeaponsTillWin.IntValue;
 		
 		// Make this prettier later i dunno
+		Native_OnWin(client);
 		CPrintToChatAll("%s %N wins the game!", TGG_PREFIX, client);
 		
 		ForceTeamWin(TF2_GetClientTeam(client));

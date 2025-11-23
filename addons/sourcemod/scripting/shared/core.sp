@@ -100,6 +100,12 @@ public Plugin myinfo =
 };
 
 
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
+{
+	Natives_PluginLoad();
+
+	return APLRes_Success;
+}
 public void OnPluginStart()
 {
 	
@@ -195,6 +201,7 @@ public void OnMapStart()
 	FartGun_Precache();
 	PosionSandvichMapStart();
 	HookshotMapStart();
+	Spell_MapStart();
 }
 public void OnConfigsExecuted()
 {
