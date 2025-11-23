@@ -85,6 +85,10 @@
 #include "weapons/weapon_scp018.sp"
 #include "weapons/weapon_firestaff.sp"
 #include "weapons/weapon_cspy.sp"
+#include "weapons/weapon_hax.sp"
+#include "weapons/weapon_reverse_rocket.sp"
+#include "weapons/weapon_fartgun.sp"
+#include "weapons/weapon_poisoned_sandvich.sp"
 
 public Plugin myinfo =
 {
@@ -184,7 +188,11 @@ public void OnMapStart()
 	KamikazeMapStart();
 	DupStepGunMapStart();
 	CowMangler_Precache();
+	Hax_Precache();
 	Init_SCP18();
+	ReverseRocket_Precache();
+	FartGun_Precache();
+	PosionSandvichMapStart();
 }
 public void OnConfigsExecuted()
 {

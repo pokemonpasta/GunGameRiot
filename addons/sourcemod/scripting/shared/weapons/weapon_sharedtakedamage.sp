@@ -120,3 +120,11 @@ public Action TheFish_OnTakeDamage(int victim, int &attacker, int &inflictor, fl
 	SnapEyeAngles(victim, fAng);
 	return Plugin_Continue;
 }
+
+
+public Action Reverse_RocketLauncher_OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	if(victim == attacker)
+		damage = 69420.0;
+	return Plugin_Continue;
+}
